@@ -32,8 +32,23 @@ tasksRouter.get("/:taskId", auth, async (req, res) => {
 tasksRouter.patch("/:taskId", auth, async (req, res) => {
   const task = await tasksModel.findOne({ _id: req.params.taskId });
   if (task.userId == req.body.userId) {
-    await tasksModel.findByIdAndUpdate({ _id: req.params.taskId }, req.body);
-    res.send({ msg: "Task Edited" });
+    switch (req.body.type) {
+      case "EDIT_TASK":
+        await tasksModel.findByIdAndUpdate(
+          { _id: req.params.taskId },
+          req.body
+        );
+        res.send({ msg: "Task Edited" });
+        return;
+      case "ADD_SUBTASK":
+        console.log(req.body);
+        if (req.body.subTask) {
+          task.subTasks.push(req.body.subTask);
+          task.save();
+        }
+        res.send({ msg: "Task Edited" });
+        return;
+    }
   } else {
     res.send({ msg: "NOT AUTHORIZED" });
   }
